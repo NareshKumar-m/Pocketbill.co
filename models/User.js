@@ -3,10 +3,11 @@ const sequelize = require('../config').sequelize;
 const argon2 = require('argon2');
 
 const User = sequelize.define('user', {
-    email : Sequelize.STRING,
-    password : Sequelize.STRING
+    id: { type: Sequelize.UUID, defaultValue: Sequelize.UUIDV4, primaryKey: true},
+    email : { type: Sequelize.STRING, allowNull: false, unique : true },
+    password :{ type: Sequelize.STRING, allowNull: false}
 });
-User.hash = plaintext => {
+User.hash = async plaintext => {
     return argon2.hash(plaintext, {type : argon2.argon2id});
 };
 
@@ -17,7 +18,7 @@ User.validate = async (email, password) => {
         }
     });
 
-    if(!result.password) return false;
+    if(!result) return false;
     return await argon2.verify(result.password, password);
 
 };
